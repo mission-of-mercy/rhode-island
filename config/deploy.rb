@@ -12,7 +12,7 @@ set :user, "deploy"
 set :deploy_to, "/home/deploy/#{application}"
 set :use_sudo, false
 
-server "mom.ri", :app, :web, :db, :primary => true
+server "momma.ri", :app, :web, :db, :primary => true
 
 namespace :deploy do
   task :restart, :roles => :app, :except => { :no_release => true } do
