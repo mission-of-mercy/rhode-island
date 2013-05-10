@@ -11,7 +11,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120323181330) do
+ActiveRecord::Schema.define(:version => 20130414151507) do
+
+  create_table "heard_about_clinics", :force => true do |t|
+    t.string   "reason"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "patient_assignments", :force => true do |t|
     t.integer  "patient_id"
@@ -105,6 +111,7 @@ ActiveRecord::Schema.define(:version => 20120323181330) do
     t.integer  "survey_id"
     t.string   "phone"
     t.integer  "previous_chart_number"
+    t.boolean  "chart_printed",                             :default => false, :null => false
   end
 
   create_table "pre_meds", :force => true do |t|
@@ -146,6 +153,12 @@ ActiveRecord::Schema.define(:version => 20120323181330) do
     t.datetime "updated_at"
   end
 
+  create_table "races", :force => true do |t|
+    t.string   "category"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "support_requests", :force => true do |t|
     t.integer  "user_id"
     t.integer  "area_id"
@@ -174,10 +187,18 @@ ActiveRecord::Schema.define(:version => 20120323181330) do
     t.boolean  "has_place_to_be_seen_for_dental_care"
     t.boolean  "no_insurance"
     t.boolean  "insurance_from_job"
+    t.boolean  "medicaid_or_chp_plus"
     t.boolean  "self_purchase_insurance"
     t.boolean  "medicaid_or_chp_plus"
     t.string   "other_insurance"
     t.boolean  "tobacco_use"
+    t.boolean  "saga_insurance"
+    t.boolean  "husky_insurance_a"
+    t.boolean  "husky_insurance_b"
+    t.boolean  "husky_insurance_c"
+    t.boolean  "husky_insurance_d"
+    t.boolean  "husky_insurance_unknown"
+    t.boolean  "charter_oak"
   end
 
   create_table "treatment_areas", :force => true do |t|

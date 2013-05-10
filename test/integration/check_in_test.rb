@@ -3,31 +3,48 @@ require 'test_helper'
 class CheckInTest < ActionDispatch::IntegrationTest
   def setup
     Capybara.current_driver = :webkit
-
-    FactoryGirl.create(:treatment, :name => 'Cleaning')
   end
 
   test "must agree that the waiver has been signed before filling out form" do
     sign_in_as "Check in"
-    assert_equal find_field('First name')[:disabled], "true"
-    assert_equal find_button('Next')[:disabled], "true"
+
+    # For some reason capybara won't find this field via `field_labeled`
+    # while disabled. Instead we have to use the field's ID
+    #
+    assert find('#patient_first_name')['disabled']
+    assert find('.input-bottom input')['disabled']
 
     agree_to_waver
 
-    assert_equal find_field('First name')[:disabled], "false"
-    assert_equal find_button('Next')[:disabled], "false"
+    refute field_labeled('First name')['disabled']
+    refute find('.input-bottom input')['disabled']
   end
 
   test "does not show the waiver confirmation when returning to form for errors" do
     sign_in_as "Check in"
 
     agree_to_waver
-    click_button "Next"
-    click_button "Check In"
 
-    refute find('.waiver_confirmation').visible?, "waiver confirmation should not be visible"
-    assert_equal find_button('Next')[:disabled], "false", "form should be enabled"
+    within("#new_patient") do
+      click_button "Next"
+
+      refute has_css?('.waiver_confirmation'),
+             "waiver confirmation should not be present"
+      refute find_button('Next')['disabled']
+             "form should be enabled"
+    end
   end
+
+  test "date of birth visible field should be text by default" do
+    sign_in_as "Check in"
+
+    assert find('#date-text').visible?,
+      "date of birth text input should be visible"
+
+    refute find('#date-select').visible?,
+      "date of birth selects should be hidden"
+  end
+
 
   test "previous patients chart should be printed when there is one" do
     patient = FactoryGirl.create(:patient)
@@ -38,7 +55,7 @@ class CheckInTest < ActionDispatch::IntegrationTest
     assert find(".popup").has_content?(patient.id.to_s)
   end
 
-  test "the button should not be visible if there is no previous patient information" do
+  test "button is hidden if there is no previous patient information" do
     sign_in_as "Check in"
 
     agree_to_waver
@@ -47,7 +64,7 @@ class CheckInTest < ActionDispatch::IntegrationTest
       "'Same as previous patient' button should be hidden"
   end
 
-  test "should display the button if previous patient information is available" do
+  test "display the button if previous patient information is available" do
     patient = FactoryGirl.create(:patient)
     sign_in_as "Check in"
 
@@ -57,7 +74,7 @@ class CheckInTest < ActionDispatch::IntegrationTest
       "'Same as previous patient' button should be visible"
   end
 
-  test "populates each field when clicked" do
+  test "same as previous patient populates each field when clicked" do
     phone = "230-111-1111"; street = "12 St."; zip = "90210"
     city = "Beverley Hills"; state = "CA"
 
@@ -66,7 +83,10 @@ class CheckInTest < ActionDispatch::IntegrationTest
 
     sign_in_as "Check in"
     visit("/patients/new?last_patient_id=" + patient.id.to_s)
-    click_link "Check In Next Patient"
+
+    within("#facebox") do
+      click_link "Check In Next Patient"
+    end
 
     agree_to_waver
 
@@ -80,28 +100,40 @@ class CheckInTest < ActionDispatch::IntegrationTest
   end
 
   test "lists treatments dynamically from the treatment model" do
-    t1 = FactoryGirl.create(:treatment, :name => 'treatment 1')
-    t2 = FactoryGirl.create(:treatment, :name => 'treatment 2')
-    t3 = FactoryGirl.create(:treatment, :name => 'treatment 3')
+    options = %w[Extraction Prosthetic Bazinga]
+
+    options.each { |name| FactoryGirl.create(:treatment, name: name) }
 
     sign_in_as "Check in"
-    select = find('#patient_chief_complaint')
-    assert select.has_content? t1.name
-    assert select.has_content? t2.name
-    assert select.has_content? t3.name
+
+    agree_to_waver
+
+    assert has_select?("Reason for today's visit", :with_options => options)
   end
 
-  test "date of birth can be entered via free form text box" do
+  test "can return to the demographic page from the survey page" do
     sign_in_as "Check in"
 
     agree_to_waver
 
     fill_out_form
 
-    click_button 'Next'
-    click_button 'Check In'
+    click_button "Next"
 
-    assert_current_path new_patient_path
+    patient = Patient.last until patient.present?
+
+    assert_equal new_patient_survey_path(patient), current_path
+
+    click_button "Back"
+
+    assert_equal edit_patient_path(patient), current_path
+
+    fill_in 'First name', :with => "Frank"
+    fill_in 'Last name',  :with => "Pepelio"
+
+    click_button "Next"
+
+    assert_content "Frank Pepelio"
   end
 
   private

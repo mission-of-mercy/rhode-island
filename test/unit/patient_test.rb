@@ -1,4 +1,4 @@
-require "test_helper"
+require_relative "../test_helper"
 
 class PatientTest < ActiveSupport::TestCase
 
@@ -88,7 +88,7 @@ class PatientTest < ActiveSupport::TestCase
   end
 
   test "travel time is calculated correctly" do
-    patient = TestHelper.valid_patient
+    patient = FactoryGirl.build(:patient, travel_time: 0)
 
     patient.travel_time_minutes = 15
 

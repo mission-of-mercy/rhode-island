@@ -1,5 +1,7 @@
 //= require jquery
 //= require jquery_ujs
+//= require jquery-ui
+//= require twitter/bootstrap
 //= require_tree ../../../vendor/assets/javascripts
 //= require_self
 //= require_tree .
@@ -17,6 +19,7 @@ MoM.setupNamespace = function(namespace){
 
 MoM.init = function(){
   MoM.Support.init(true);
+  $(document).pjax('#tabnav a', '[data-pjax-container]');
 }
 
 MoM.disableEnterKey = function(form){
@@ -28,3 +31,5 @@ MoM.disableEnterKey = function(form){
 MoM.openInBackground = function(url){
    window.open(url); self.focus();
 }
+
+MoM.mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent);

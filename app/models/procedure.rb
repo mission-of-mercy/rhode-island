@@ -9,6 +9,6 @@ class Procedure < ActiveRecord::Base
   validates_presence_of   :code
 
   def full_description
-    "#{code}: #{description}"
+    "#{code}: #{description.titleize}"
   end
 end

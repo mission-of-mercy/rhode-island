@@ -1,6 +1,11 @@
 class AssignmentDeskController < ApplicationController
   before_filter :authenticate_user!
 
+  def index
+    @patients_table = PatientsTable.new
+    @patient_search = @patients_table.search(params)
+  end
+
   def edit
     @patient = Patient.find(params[:id])
     @is_assigned_to_radiology = @patient.assigned_to?(TreatmentArea.radiology)
@@ -17,7 +22,7 @@ class AssignmentDeskController < ApplicationController
       flash[:notice] = 'Patient was successfully assigned.'
     end
 
-    redirect_to patients_path
+    redirect_to :action => "index"
   end
 
   private

@@ -20,32 +20,33 @@
   %u Summary
 
 %p
-  Total Patients Checked In:
+  Patients Checked In:
   = @report.patient_count
   %br
-  Total Patients Given X-Rays:
+  Patients Given X-Rays:
   = @report.xrays
   %br
-  Total Patients Checked Out:
+  Patients Checked Out:
   = @report.checkouts
-
-%p
-  Total Procedures:
-  = @report.procedure_count
   %br
-  Total Procedures Value:
+  Repeat Patients:
+  = @report.multivisit_patents.count
+%p
+  Procedures: #{@report.procedure_count}
+  %br
+  Procedures Value:
   = real_currency @report.procedure_value
   %br
-  Total Prescriptions:
+  Prescriptions:
   = @report.prescription_count
   %br
-  Total Prescriptions Value:
+  Prescriptions Value:
   = real_currency @report.prescription_value
   %br
-  Total Pre-Medications:
+  Pre-Medications:
   = @report.pre_med_count
   %br
-  Total Pre-Medications Value:
+  Pre-Medications Value:
   = real_currency @report.pre_med_value
   %br
   Grand Total Value:
@@ -58,6 +59,18 @@
 %h2
   %u Detail
 
+- if @report.patients_per_treatment_area.any?
+  %table
+    %thead
+      %tr
+        %th Treatment Area
+        %th Number of Patients
+    %tbody
+      - @report.patients_per_treatment_area.each do |ta_summary|
+        %tr
+          %td= ta_summary.treatment_area.name
+          %td= ta_summary.patient_count
+
 - if @report.procedure_count > 0
   %table
     %thead
@@ -66,11 +79,11 @@
         %th Quantity
         %th Dollar Value
     %tbody
-      - @report.procedures.each do |procedure, qty, value|
+      - @report.procedures.each do |procedure|
         %tr{:class => cycle('even', 'odd')}
-          %td= procedure
-          %td.integer= qty
-          %td.integer= real_currency value
+          %td= procedure.full_description
+          %td.integer= procedure.subtotal_count
+          %td.integer= real_currency procedure.subtotal_value
     %tfoot
       %tr
         %th Total
@@ -86,11 +99,11 @@
         %th Quantity
         %th Dollar Value
     %tbody
-      - @report.prescriptions.each do |prescription, qty, value|
+      - @report.prescriptions.each do |prescription|
         %tr{:class => cycle('even', 'odd')}
-          %td= prescription
-          %td.integer= qty
-          %td.integer= real_currency value
+          %td= prescription.name
+          %td.integer= prescription.prescription_count
+          %td.integer= real_currency prescription.prescription_value
     %tfoot
       %tr
         %th Total
@@ -106,20 +119,50 @@
         %th Quantity
         %th Dollar Value
     %tbody
-      - @report.pre_meds.each do |pre_med, qty, value|
+      - @report.pre_meds.each do |pre_med|
         %tr{:class => cycle('even', 'odd')}
-          %td= pre_med
-          %td.integer= qty
-          %td.integer= real_currency value
+          %td= pre_med.description
+          %td.integer= pre_med.pre_med_count
+          %td.integer= real_currency pre_med.pre_med_value
     %tfoot
       %tr
         %th Total
         %th= @report.pre_med_count
         %th= real_currency @report.pre_med_value
 
-%h2
+%h1
   Grand Total Value:
   = real_currency @report.grand_total
 
-%p
+- if params[:day] != 'All'
+
+  %h2
+    %u Clinic Throughput
+
+  %h3 Check-ins per hour
+
+  = bar_graph('checkins_per_hour_graph',
+    per_hour(@report.patients_per_hour),
+    {style: "width: 800px; height: 300px;"})
+
+  %h3 Radiology visits per hour
+
+  = bar_graph('xrays_per_hour_graph',
+    per_hour(@report.xrays_per_hour),
+    {style: "width: 800px; height: 300px;"})
+
+  %h3 Check-outs per hour
+
+  = bar_graph('checkouts_per_hour_graph',
+    per_hour(@report.checkouts_per_hour),
+    {style: "width: 800px; height: 300px;"})
+
+  %h3 Procedures per hour
+
+  = bar_graph('procedures_per_hour_graph',
+    per_hour(@report.procedures_per_hour),
+    {style: "width: 800px; height: 300px;"})
+
+%div
   = link_to "Back", admin_reports_path, :class => "back"
+

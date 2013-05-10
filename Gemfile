@@ -1,37 +1,55 @@
 source 'http://rubygems.org'
 
-gem 'rails', '~> 3.1.0'
-
+gem 'rails', '~> 3.2.13'
+gem 'rack',  '~> 1.4.5'
+gem 'rdoc',  '~> 3.12.1'
+gem 'json',  '~> 1.7.7'
 gem 'pg'
-gem 'haml', '~> 3.0'
-
-group :assets do
-  gem 'sass-rails',   '~> 3.1.0'
-  gem 'uglifier'
-  gem 'compass',      '~> 0.12.alpha'
-end
+gem 'haml'
+gem 'sass'
 
 gem 'will_paginate', '~> 3.0.2'
-gem 'devise'
+gem 'devise',        '~> 2.2.3'
 gem 'dynamic_form'
+gem 'draper'
+gem 'rack-pjax'
+gem 'virtus'
+gem 'axlsx'
 
 gem 'jquery-rails'
+gem 'will_paginate-bootstrap'
 
-gem 'rainbow'
-gem 'highline',     :require => false
+gem 'rails_setup'
 gem 'faker',        :require => false
 gem 'rubyzip',      :require => false
 
-gem 'capistrano'
 gem 'whenever'
 
+group :assets do
+  gem 'sass-rails',   '~> 3.2.0'
+  gem 'coffee-rails', '~> 3.2.0'
+  gem 'uglifier'
+  gem 'compass-rails'
+  gem 'bootstrap-sass-rails'
+end
+
+group :development do
+  gem 'quiet_assets'
+  gem 'better_errors'
+  gem 'binding_of_caller'
+  gem 'capistrano'
+  gem 'capistrano_colors'
+end
+
 group :test do
-  gem 'minitest',  '~> 2.3.1'
+  gem 'minitest'
   gem 'faker'
-  gem 'colorific', '~> 1.0.0'
   gem 'factory_girl_rails'
-  gem 'capybara',  '~> 1.1.1'
-  gem 'launchy'
-  gem 'database_cleaner', '~> 0.7.1'
+  gem 'capybara'
   gem 'capybara-webkit'
+  gem 'capybara-screenshot'
+  gem 'launchy'
+  gem 'database_cleaner'
+  gem 'turn'
+  gem 'timecop'
 end

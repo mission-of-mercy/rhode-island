@@ -1,15 +1,4 @@
 class Patient < ActiveRecord::Base
-
-  RACES = [
-    "African American/Black",
-    "American Indian/Alaska Native",
-    "Asian/Pacific Islander",
-    "Caucasian/White",
-    "Hispanic",
-    "Indian",
-    "Other"
-  ]
-
   REGEXP = {
     :time_in_pain   => /\A(\d*\.?\d*)\s*(.+)\Z/,
     :number_only    => /\A(\d*\.?\d*)\Z/,
@@ -24,8 +13,8 @@ class Patient < ActiveRecord::Base
                                           REGEXP[:months],
                                           REGEXP[:years] )
 
-  before_save  :update_survey
   before_save  :normalize_data
+  before_save  :update_survey
   after_create :check_in_flow
 
   has_many :patient_prescriptions, :dependent   => :delete_all
@@ -73,17 +62,23 @@ class Patient < ActiveRecord::Base
   attr_accessor :race_other
   attr_reader   :time_in_pain
 
-  # Old Pagination Method ...
-  def self.search(chart_number, name, page)
-    conditions = if chart_number.blank? && !name.blank?
-      ['first_name ILIKE ? or last_name ILIKE ?', "%#{name}%","%#{name}%"]
-    elsif !chart_number.blank? && chart_number.to_i != 0
-      ["id = ?", chart_number]
-    else
-      ["id = ?", -1]
-    end
+  # TODO Remove this after Rails 4 upgrade
+  # https://github.com/rails/rails/commit/75de1ce131cd39f68dbe6b68eecf2617a720a8e4
+  #
+  def self.none
+    where(id: -1)
+  end
 
-    Patient.where(conditions).order('id').paginate(:per_page => 30, :page => page)
+  def self.unique
+    where(:previous_chart_number => nil)
+  end
+
+  def self.created_today
+    where("patients.created_at::Date = ?", Date.today)
+  end
+
+  def self.unique
+    Patient.where(previous_chart_number: nil)
   end
 
   def chart_number
@@ -128,7 +123,6 @@ class Patient < ActiveRecord::Base
       self.flows.create(area_id: ClinicArea::XRAY)
     else
       self.flows.create(area_id: ClinicArea::CHECKOUT, treatment_area_id: area.id)
-      self.update_attributes(survey_id: nil)
     end
 
     assignment.check_out if assignment
@@ -185,7 +179,9 @@ class Patient < ActiveRecord::Base
   end
 
   def travel_time_hours
-    @travel_time_hours ||= 0
+    @travel_time_hours ||= begin
+      (travel_time / 60).to_i if travel_time
+    end
   end
 
   def travel_time_minutes=(minutes)
@@ -195,7 +191,9 @@ class Patient < ActiveRecord::Base
   end
 
   def travel_time_minutes
-    @travel_time_minutes ||= 0
+    @travel_time_minutes ||= begin
+      (travel_time % 60).to_i if travel_time
+    end
   end
 
   def time_in_pain=(time_in_pain)
@@ -255,18 +253,9 @@ class Patient < ActiveRecord::Base
   private
 
   def update_survey
-    self.survey = nil if !self.previous_chart_number.blank?
+    return if !previous_chart_number.blank?
 
-    if self.survey
-      self.survey.city                = city
-      self.survey.state               = state
-      self.survey.zip                 = zip
-      self.survey.age                 = age
-      self.survey.sex                 = sex
-      self.survey.race                = race
-      self.survey.pain                = pain
-      self.survey.pain_length_in_days = pain_length_in_days
-    end
+    survey.update_patient_information(self) if survey
   end
 
   def normalize_data
@@ -300,7 +289,10 @@ class Patient < ActiveRecord::Base
   end
 
   def calculate_travel_time
-    self.travel_time = travel_time_minutes + (travel_time_hours * 60)
+    minutes = travel_time_minutes || 0
+    hours   = travel_time_hours   || 0
+
+    self.travel_time = (minutes + (hours * 60)).to_i
   end
 
   def date_of_birth_entry

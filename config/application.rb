@@ -15,8 +15,10 @@ module MissionOfMercy
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
 
+    config.middleware.use Rack::Pjax
+
     # Custom directories with classes and modules you want to be autoloadable.
-    # config.autoload_paths += %W(#{config.root}/extras)
+    config.autoload_paths += %W(#{config.root}/app)
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
@@ -46,6 +48,7 @@ module MissionOfMercy
     config.assets.version = '1.0'
 
     config.assets.precompile += ['print/default.css', 'print/report.css']
+    config.assets.paths << Rails.root.join("app", "assets", "mp3")
 
     Date::DATE_FORMATS.merge!(:default => '%m/%d/%Y')
 
