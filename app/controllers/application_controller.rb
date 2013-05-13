@@ -1,5 +1,5 @@
 class ApplicationController < ActionController::Base
-  helper_method :app_config, :stats, :dexis?, :cdr?
+  helper_method :app_config, :stats, :dexis?, :cdr?, :kodak?
 
   protect_from_forgery
 
@@ -51,5 +51,9 @@ class ApplicationController < ActionController::Base
 
   def cdr?
     app_config['xray'] == "cdr"
+  end
+
+  def kodak?
+    app_config['xray'] == "kodak"
   end
 end
