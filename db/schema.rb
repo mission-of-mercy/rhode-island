@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130414151507) do
+ActiveRecord::Schema.define(:version => 20130513011519) do
 
   create_table "heard_about_clinics", :force => true do |t|
     t.string   "reason"
@@ -189,7 +189,6 @@ ActiveRecord::Schema.define(:version => 20130414151507) do
     t.boolean  "insurance_from_job"
     t.boolean  "medicaid_or_chp_plus"
     t.boolean  "self_purchase_insurance"
-    t.boolean  "medicaid_or_chp_plus"
     t.string   "other_insurance"
     t.boolean  "tobacco_use"
     t.boolean  "saga_insurance"
@@ -199,6 +198,11 @@ ActiveRecord::Schema.define(:version => 20130414151507) do
     t.boolean  "husky_insurance_d"
     t.boolean  "husky_insurance_unknown"
     t.boolean  "charter_oak"
+    t.boolean  "use_twitter"
+    t.boolean  "use_facebook"
+    t.boolean  "dental_insurance"
+    t.boolean  "medical_insurance"
+    t.boolean  "has_place_to_be_seen_for_medical_care"
   end
 
   create_table "treatment_areas", :force => true do |t|
